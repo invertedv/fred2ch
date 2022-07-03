@@ -14,7 +14,7 @@
 // The table created has these fields:
 //
 // seriesId    String     series ID requested
-// month       Date       date of date
+// date        Date       date of metric value
 // value       Float32    value of metric
 //
 // All months available for the series are loaded.
@@ -34,11 +34,11 @@ import (
 	"time"
 )
 
-// Datum is the data for a single month
+// Datum is the data for a single date
 type Datum struct {
 	RtStart string `json:"realtime_start,omitempty"`
 	RtEnd   string `json:"realtime_end,omitempty"`
-	Month   string `json:"date,omitempty"`
+	Date    string `json:"date,omitempty"`
 	Value   string `json:"value,omitempty"`
 }
 
@@ -130,12 +130,12 @@ func makeTable(seriesId string, table string, con *chutils.Connect) error {
 	fd := &chutils.FieldDef{Name: "seriesId",
 		ChSpec:      chutils.ChField{Base: chutils.ChString},
 		Legal:       &chutils.LegalValues{},
-		Description: "Fred II series id"}
+		Description: "Fred II series ID"}
 	fds[0] = fd
-	fd = &chutils.FieldDef{Name: "month",
+	fd = &chutils.FieldDef{Name: "date",
 		ChSpec:      chutils.ChField{Base: chutils.ChDate},
 		Legal:       &chutils.LegalValues{},
-		Description: "month"}
+		Description: "date of metric value"}
 	fds[1] = fd
 	fd = &chutils.FieldDef{Name: "value",
 		ChSpec:      chutils.ChField{Base: chutils.ChFloat, Length: 32},
@@ -143,7 +143,7 @@ func makeTable(seriesId string, table string, con *chutils.Connect) error {
 		Description: fmt.Sprintf("metric value for series %s", seriesId)}
 	fds[2] = fd
 
-	td := chutils.NewTableDef("month", chutils.MergeTree, fds)
+	td := chutils.NewTableDef("date", chutils.MergeTree, fds)
 	// check everything is OK with our TableDef
 	if e := td.Check(); e != nil {
 		return e
@@ -157,7 +157,7 @@ func makeTable(seriesId string, table string, con *chutils.Connect) error {
 
 // loadSeries pushes the returned series to ClickHouse.  Any existing version of table is dropped.
 func loadSeries(data *Series, seriesId string, table string, con *chutils.Connect) error {
-	// missing value for month if month is not valid
+	// missing value for date if date is not valid
 	var missing = time.Date(1901, 1, 1, 0, 0, 0, 0, time.UTC)
 	if e := makeTable(seriesId, table, con); e != nil {
 		return e
@@ -173,11 +173,11 @@ func loadSeries(data *Series, seriesId string, table string, con *chutils.Connec
 	// work through the array
 	for _, d := range data.Results {
 		// check date is legit
-		dt, e := time.Parse("2006-01-02", d.Month)
+		dt, e := time.Parse("2006-01-02", d.Date)
 		if e != nil {
 			dt = missing
 		}
-		// each row just has 3 values: seriesId, month, value
+		// each row just has 3 values: seriesId, date, value
 		line := fmt.Sprintf("'%s','%s',%v", seriesId, dt.Format("2006-01-02"), d.Value)
 		if _, e := wtr.Write([]byte(line)); e != nil {
 			return e
