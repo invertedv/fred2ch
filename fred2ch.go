@@ -1,9 +1,9 @@
 // Command fred2ch is a simple command that pulls a single series from the St Louis Federal Reserve database
 // Fred II then creates and populates a ClickHouse table for it.
 // Required command line arguments:
-//    -series  Fred II series id
-//    -table   destination ClickHouse table.
-//    -api     Fred II API key
+//    -series         Fred II series id
+//    -table          destination ClickHouse table.
+//    -api            Fred II API key
 //
 // Optional command line arguments:
 //    -host           IP of ClickHouse database. Default: 127.0.0.1
