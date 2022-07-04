@@ -1,6 +1,5 @@
-// Command fred2ch loads a single Fred II series to a ClickHouse table.
-// Call:
-//
+// Command fred2ch is a simple command that pulls a single series from the St Louis Federal Reserve database
+// Fred II then creates and populates a ClickHouse table for it.
 // Required command line arguments:
 //    -series  Fred II series id
 //    -table   destination ClickHouse table.
@@ -13,12 +12,13 @@
 //
 // The table created has these fields:
 //
-// seriesId    String     series ID requested
-// date        Date       date of metric value
-// value       Float32    value of metric
+//     seriesId    String     series ID requested
+//     date        Date       date of metric value
+//     value       Float32    value of metric
 //
 // All months available for the series are loaded.
-// Series names are case insensitive.
+//
+// Series names are case-insensitive.
 package main
 
 import (
@@ -44,19 +44,19 @@ type Datum struct {
 
 // Series is the outermost struct returned by the http Get
 type Series struct {
-	ObservationStart string  `json:"observation_start"`
-	ObservationEnd   string  `json:"observation_end"`
-	Units            string  `json:"units"`
-	OrderBy          string  `json:"order_by"`
-	Count            int     `json:"count"`
-	RealtimeStart    string  `json:"realtime_start"`
-	RealtimeEnd      string  `json:"realtime_end"`
-	OutputType       int     `json:"output_type"`
-	FileType         string  `json:"file_type"`
-	SortOrder        string  `json:"sort_order"`
-	Offset           int     `json:"offset"`
-	Limit            int     `json:"limit"`
-	Results          []Datum `json:"observations"`
+	ObservationStart string  `json:"observation_start,omitempty"`
+	ObservationEnd   string  `json:"observation_end,omitempty"`
+	Units            string  `json:"units,omitempty"`
+	OrderBy          string  `json:"order_by,omitempty"`
+	Count            int     `json:"count,omitempty"`
+	RealtimeStart    string  `json:"realtime_start,omitempty"`
+	RealtimeEnd      string  `json:"realtime_end,omitempty"`
+	OutputType       int     `json:"output_type,omitempty"`
+	FileType         string  `json:"file_type,omitempty"`
+	SortOrder        string  `json:"sort_order,omitempty"`
+	Offset           int     `json:"offset,omitempty"`
+	Limit            int     `json:"limit,omitempty"`
+	Results          []Datum `json:"observations,omitempty"`
 }
 
 // apiUrl is the address of the API
