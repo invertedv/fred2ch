@@ -91,7 +91,7 @@ func main() {
 			fmt.Println(e)
 		}
 	}()
-
+	sTime := time.Now()
 	results, e := getSeries(*seriesPtr, *apiKeyPtr)
 	if e != nil {
 		log.Fatalln(e)
@@ -100,6 +100,10 @@ func main() {
 	if e := loadSeries(results, *seriesPtr, *tablePtr, con); e != nil {
 		log.Fatalln(e)
 	}
+	ts := int(time.Since(sTime).Seconds())
+	mins := ts / 60
+	secs := ts % 60
+	fmt.Printf("elapsed time: %d minutes %d seconds", mins, secs)
 
 }
 
@@ -164,7 +168,7 @@ func makeTable(seriesId string, table string, con *chutils.Connect) error {
 // loadSeries pushes the returned series to ClickHouse.  Any existing version of table is dropped.
 func loadSeries(data *Series, seriesId string, table string, con *chutils.Connect) error {
 	// missing value for date if date is not valid
-	var missing = time.Date(1901, 1, 1, 0, 0, 0, 0, time.UTC)
+	var missing = time.Date(1969, 1, 1, 0, 0, 0, 0, time.UTC)
 	if e := makeTable(seriesId, table, con); e != nil {
 		return e
 	}
@@ -183,6 +187,10 @@ func loadSeries(data *Series, seriesId string, table string, con *chutils.Connec
 		if e != nil {
 			dt = missing
 		}
+		// don't load dates prior to 1970.  ClickHouse Date type has a min date of 1970/1/1
+		if dt.Year() < 1970 {
+			continue
+		}
 		// each row just has 3 values: seriesId, date, value
 		line := fmt.Sprintf("'%s','%s',%v", seriesId, dt.Format("2006-01-02"), d.Value)
 		if _, e := wtr.Write([]byte(line)); e != nil {
@@ -193,7 +201,6 @@ func loadSeries(data *Series, seriesId string, table string, con *chutils.Connec
 	if e := wtr.Insert(); e != nil {
 		return e
 	}
-	fmt.Printf("%d rows for series %s loaded to table %s\n", loaded, seriesId, table)
 	return nil
 }
 
