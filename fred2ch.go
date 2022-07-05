@@ -73,13 +73,14 @@ func main() {
 	seriesPtr := flag.String("series", "", "string")
 
 	tablePtr := flag.String("table", "", "string")
+
+	flag.Parse()
+
+	// Check if required arguments are missing
 	if *apiKeyPtr == "" || *seriesPtr == "" || *tablePtr == "" {
 		help()
 		os.Exit(1)
 	}
-
-	// fields we can subset/segment on
-	flag.Parse()
 
 	con, err := chutils.NewConnect(*hostPtr, *userPtr, *passwordPtr, clickhouse.Settings{"max_memory_usage": 40000000000})
 	if err != nil {
